@@ -13,27 +13,27 @@ lazy val root = (project in file("."))
     scalaVersion := scala212Version,
     crossScalaVersions := Seq(scala212Version, scala213Version),
     libraryDependencies ++= Seq(
-      "org.flywaydb" % "flyway-core" % flywayVersion
+      "org.flywaydb" % "flyway-core" % flywayVersion,
     ),
     scalacOptions ++= Seq(
       "-deprecation",
       "-unchecked",
-      "-Xfuture"
+      "-Xfuture",
     ),
-    scalacOptions in (Compile, doc) ++= {
+    Compile / scalacOptions ++= {
       Seq(
         "-sourcepath",
-        (baseDirectory in LocalRootProject).value.getAbsolutePath,
+        (LocalRootProject / baseDirectory).value.getAbsolutePath,
         "-doc-source-url",
         s"""https://github.com/ijufumi/flyway-sbt/tree/${sys.process
           .Process("git rev-parse HEAD")
           .lineStream_!
-          .head}€{FILE_PATH}.scala"""
+          .head}€{FILE_PATH}.scala""",
       )
     },
     scriptedLaunchOpts := {
       scriptedLaunchOpts.value ++
         Seq("-Xmx1024M", "-Dplugin.version=" + version.value)
     },
-    scriptedBufferLog := false
+    scriptedBufferLog := false,
   )
