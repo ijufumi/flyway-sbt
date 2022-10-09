@@ -11,3 +11,4 @@ flywayUser := "SA"
 flywayLocations += "db/sbt"
 flywayUrl := "jdbc:hsqldb:file:target/flyway_sample;shutdown=true"
 flywayUser := "SA"
+flywayCleanDisabled := false
