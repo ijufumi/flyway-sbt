@@ -20,7 +20,7 @@ lazy val root = (project in file("."))
       "-unchecked",
       "-Xfuture",
     ),
-    Compile / scalacOptions ++= {
+    Compile / doc / scalacOptions ++= {
       Seq(
         "-sourcepath",
         (LocalRootProject / baseDirectory).value.getAbsolutePath,
