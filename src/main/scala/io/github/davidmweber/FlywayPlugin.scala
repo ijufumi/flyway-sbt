@@ -405,7 +405,7 @@ object FlywayPlugin extends AutoPlugin {
   private def withContextClassLoader[T](
       cp: Types.Id[Keys.Classpath],
   )(f: => T): T = {
-    val classloader = sbt.internal.inc.classpath.ClasspathUtilities
+    val classloader = sbt.internal.inc.classpath.ClasspathUtil
       .toLoader(cp.map(_.data), getClass.getClassLoader)
     val thread = Thread.currentThread
     val oldLoader = thread.getContextClassLoader
