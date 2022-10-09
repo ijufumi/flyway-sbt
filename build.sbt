@@ -1,31 +1,39 @@
-val flywayVersion = "7.4.0"
-val pluginVersion = "7.4.0"
+val flywayVersion = "9.4.0"
+val pluginVersion = "9.4.0"
 
-lazy val root = (project in file ("."))
-    .enablePlugins(SbtPlugin)
-    .settings(
-      name := "flyway-sbt",
-      organization := "io.github.davidmweber",
-      version := pluginVersion,
-      libraryDependencies ++= Seq(
-        "org.flywaydb" % "flyway-core" % flywayVersion
-      ),
-      scalacOptions ++= Seq(
-        "-deprecation",
-        "-unchecked",
-        "-Xfuture"
-      ),
-      scalacOptions in (Compile, doc) ++= {
-        Seq(
-          "-sourcepath",
-          (baseDirectory in LocalRootProject).value.getAbsolutePath,
-          "-doc-source-url",
-          s"""https://github.com/flyway/flyway-sbt/tree/${sys.process.Process("git rev-parse HEAD").lineStream_!.head}€{FILE_PATH}.scala"""
-        )
-      },
-      scriptedLaunchOpts := { scriptedLaunchOpts.value ++
+val scala213Version = "2.13.9"
+val scala212Version = "2.12.17"
+
+lazy val root = (project in file("."))
+  .enablePlugins(SbtPlugin)
+  .settings(
+    name := "flyway-sbt",
+    organization := "io.github.ijufumi",
+    version := pluginVersion,
+    scalaVersion := scala212Version,
+    crossScalaVersions := Seq(scala212Version, scala213Version),
+    libraryDependencies ++= Seq(
+      "org.flywaydb" % "flyway-core" % flywayVersion
+    ),
+    scalacOptions ++= Seq(
+      "-deprecation",
+      "-unchecked",
+      "-Xfuture"
+    ),
+    scalacOptions in (Compile, doc) ++= {
+      Seq(
+        "-sourcepath",
+        (baseDirectory in LocalRootProject).value.getAbsolutePath,
+        "-doc-source-url",
+        s"""https://github.com/flyway/flyway-sbt/tree/${sys.process
+          .Process("git rev-parse HEAD")
+          .lineStream_!
+          .head}€{FILE_PATH}.scala"""
+      )
+    },
+    scriptedLaunchOpts := {
+      scriptedLaunchOpts.value ++
         Seq("-Xmx1024M", "-Dplugin.version=" + version.value)
-      },
-      scriptedBufferLog := false
+    },
+    scriptedBufferLog := false
   )
-
