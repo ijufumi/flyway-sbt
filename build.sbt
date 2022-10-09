@@ -25,7 +25,7 @@ lazy val root = (project in file("."))
         "-sourcepath",
         (baseDirectory in LocalRootProject).value.getAbsolutePath,
         "-doc-source-url",
-        s"""https://github.com/flyway/flyway-sbt/tree/${sys.process
+        s"""https://github.com/ijufumi/flyway-sbt/tree/${sys.process
           .Process("git rev-parse HEAD")
           .lineStream_!
           .head}€{FILE_PATH}.scala"""
