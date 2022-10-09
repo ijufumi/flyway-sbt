@@ -23,6 +23,7 @@ import sbt._
 
 import scala.collection.JavaConverters._
 import org.flywaydb.core.api.configuration.FluentConfiguration
+import scala.collection.mutable.Map
 
 object FlywayPlugin extends AutoPlugin {
 
@@ -424,7 +425,7 @@ object FlywayPlugin extends AutoPlugin {
     }
   }
 
-  private implicit class FluentConfigurationyOps(
+  private implicit class FluentConfiguratiOnlyOps(
       val flyway: FluentConfiguration,
   ) extends AnyVal {
     def configure(config: Config): Flyway = {
