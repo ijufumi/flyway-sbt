@@ -284,7 +284,7 @@ object FlywayPlugin extends AutoPlugin {
       flywayIgnoreFutureMigrations := false,
       flywayIgnoreFailedFutureMigration := false,
       flywayPlaceholderReplacement := defaults.isPlaceholderReplacement,
-      flywayPlaceholders := defaults.getPlaceholders.asScala.toMap,
+      flywayPlaceholders := defaults.getPlaceholders.asScala,
       flywayPlaceholderPrefix := defaults.getPlaceholderPrefix,
       flywayPlaceholderSuffix := defaults.getPlaceholderSuffix,
       flywayBaselineOnMigrate := defaults.isBaselineOnMigrate,
