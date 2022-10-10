@@ -10,6 +10,6 @@ flywayUrl := "jdbc:hsqldb:file:target/flyway_sample;shutdown=true"
 flywayUser := "SA"
 flywayLocations := Seq("filesystem:src/main/resources/db/migration")
 flywayUrl := "jdbc:hsqldb:file:target/flyway_sample;shutdown=true"
-flywayUser  := "SA"
+flywayUser := "SA"
 flywayLocations := Seq("filesystem:src/main/resources/db/migration")
 flywayCleanDisabled := false
