@@ -2,7 +2,9 @@ import xerial.sbt.Sonatype._
 
 sonatypeProfileName := "io.github.ijufumi"
 publishMavenStyle := true
-sonatypeProjectHosting := Some(GitHubHosting(user="ijufumi", repository="flyway-sbt", email="ijufumi@gmail.com"))
+sonatypeProjectHosting := Some(
+  GitHubHosting(user = "ijufumi", repository = "flyway-sbt", email = "ijufumi@gmail.com"),
+)
 //developers := List(
 //  Developer(id="davidmweber", name="David Weber", email="dave@veryflatcat.com", url=url("https://davidmweber.github.io/flyway-sbt-docs/"))
 //)
