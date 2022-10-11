@@ -1,11 +1,9 @@
 val flywayVersion = "9.4.0"
 val pluginVersion = "9.4.0"
 
-val scala213Version = "2.13.9"
 val scala212Version = "2.12.17"
 
 ThisBuild / scalaVersion := scala212Version
-ThisBuild / crossScalaVersions := Seq(scala212Version, scala213Version)
 
 lazy val root = (project in file("."))
   .enablePlugins(SbtPlugin)
