@@ -3,8 +3,8 @@ enablePlugins(FlywayPlugin)
 name := "flyway-sbt-test3"
 
 libraryDependencies ++= Seq(
-  "org.hsqldb" % "hsqldb" % "2.5.2",
-  "org.flywaydb" % "flyway-core" % "9.4.0",
+  "org.hsqldb" % "hsqldb" % "2.7.2",
+  "org.flywaydb" % "flyway-core" % "10.1.0",
 )
 
 flywayUrl := "jdbc:hsqldb:file:target/flyway_sample;shutdown=true"
