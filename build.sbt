@@ -1,7 +1,7 @@
-val flywayVersion = "9.4.0"
-val pluginVersion = "9.4.0"
+val flywayVersion = "9.22.3"
+val pluginVersion = "9.22.3"
 
-val scala212Version = "2.12.17"
+val scala212Version = "2.12.18"
 
 ThisBuild / scalaVersion := scala212Version
 
