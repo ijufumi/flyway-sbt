@@ -4,7 +4,6 @@ name := "flyway-sbt-test3"
 
 libraryDependencies ++= Seq(
   "org.hsqldb" % "hsqldb" % "2.7.2",
-  "org.flywaydb" % "flyway-database-hsqldb" % "10.1.0",
 )
 
 flywayUrl := "jdbc:hsqldb:file:target/flyway_sample;shutdown=true"
