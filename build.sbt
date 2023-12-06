@@ -13,7 +13,6 @@ lazy val root = (project in file("."))
     version := pluginVersion,
     libraryDependencies ++= Seq(
       "org.flywaydb" % "flyway-core" % flywayVersion,
-      "org.flywaydb" % "flyway-database-hsqldb" % flywayVersion,
     ),
     scalacOptions ++= Seq(
       "-deprecation",
