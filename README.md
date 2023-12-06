@@ -1,6 +1,9 @@
 
 ![Scala CI](https://github.com/flyway/flyway-sbt/workflows/Scala%20CI/badge.svg)
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.davidmweber/flyway-sbt.svg)](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22io.github.davidmweber%22%20AND%20a%3A%22flyway-sbt%22)
+## Caution
+
+Forked from https://github.com/flyway/flyway-sbt
 
 ## Sbt 1.x plugin for [Flyway](https://flywaydb.org)
 
