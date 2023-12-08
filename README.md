@@ -67,7 +67,7 @@ sbt scripted
 
 Early adopters should just publish a clone or fork of this repository locally:
 ```bash
-git clone https://github.com/flyway/flyway-sbt.git
+git clone https://github.com/ijufumi/flyway-sbt.git
 cd flyway-sbt
 sbt publishLocal
 ```
