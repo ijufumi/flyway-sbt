@@ -6,6 +6,7 @@ val scala212Version = "2.12.18"
 ThisBuild / scalaVersion := scala212Version
 
 ThisBuild / versionScheme := Some("early-semver")
+ThisBuild / publishMavenStyle := true
 
 lazy val root = (project in file("."))
   .enablePlugins(SbtPlugin)
