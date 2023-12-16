@@ -16,14 +16,14 @@ ThisBuild / developers := List(
   )
 )
 
-licenses := List(
+ThisBuild / licenses := List(
   "Apache 2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")
 )
-homepage := Some(url("https://github.com/ijufumi/flyway-sbt"))
+ThisBuild / homepage := Some(url("https://github.com/ijufumi/flyway-sbt"))
 
 // Remove all additional repository other than Maven Central from POM
-pomIncludeRepository := { _ => false }
-publishTo := {
+ThisBuild / pomIncludeRepository := { _ => false }
+ThisBuild / publishTo := {
   // For accounts created after Feb 2021:
   // val nexus = "https://s01.oss.sonatype.org/"
   val nexus = "https://s01.oss.sonatype.org/"
@@ -32,6 +32,4 @@ publishTo := {
   else
     Some("releases" at nexus + "service/local/staging/deploy/maven2")
 }
-publishMavenStyle := true
-
-credentials += Credentials(Path.userHome / ".sbt" / "sonatype_credentials")
+ThisBuild / publishMavenStyle := true

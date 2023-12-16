@@ -1,5 +1,5 @@
 val flywayVersion = "9.22.3"
-val pluginVersion = "9.22.3"
+val pluginVersion = "9.22.3.1"
 
 val scala212Version = "2.12.18"
 
