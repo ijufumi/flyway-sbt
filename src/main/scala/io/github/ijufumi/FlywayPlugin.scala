@@ -13,16 +13,18 @@
 package io.github.ijufumi
 
 import java.util.Properties
-
 import org.flywaydb.core.Flyway
 import org.flywaydb.core.api.callback.Callback
 import org.flywaydb.core.api.logging.{Log, LogCreator, LogFactory}
 import org.flywaydb.core.internal.info.MigrationInfoDumper
-import sbt.Keys._
-import sbt._
+import sbt.Keys.*
+import sbt.*
 
-import scala.collection.JavaConverters._
+import scala.collection.JavaConverters.*
 import org.flywaydb.core.api.configuration.FluentConfiguration
+import sbt.io.PathFinder
+
+import java.net.URLClassLoader
 import scala.collection.mutable.Map
 
 object FlywayPlugin extends AutoPlugin {
@@ -406,8 +408,7 @@ object FlywayPlugin extends AutoPlugin {
   private def withContextClassLoader[T](
       cp: Types.Id[Keys.Classpath],
   )(f: => T): T = {
-    val classloader = sbt.internal.inc.classpath.ClasspathUtil
-      .toLoader(cp.map(_.data), getClass.getClassLoader)
+    val classloader = toLoader(cp.map(_.data), getClass.getClassLoader)
     val thread = Thread.currentThread
     val oldLoader = thread.getContextClassLoader
     try {
@@ -508,6 +509,9 @@ object FlywayPlugin extends AutoPlugin {
       flyway.configuration(props)
     }
   }
+
+  def toLoader(finder: PathFinder, parent: ClassLoader): ClassLoader =
+    new URLClassLoader(finder.getURLs(), parent)
 
   private object SbtLogCreator extends LogCreator {
     def createLogger(clazz: Class[_]): FlywaySbtLog.type = FlywaySbtLog
