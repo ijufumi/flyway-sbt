@@ -23,5 +23,7 @@ jobs:
         java-version: ${{ matrix.java }}
     - name: print Java version
       run: java -version
+    - name: Setup sbt launcher
+      uses: sbt/setup-sbt@v1
     - name: Run tests
       run: sbt scripted
