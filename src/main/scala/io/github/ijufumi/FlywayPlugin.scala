@@ -17,12 +17,12 @@ import org.flywaydb.core.Flyway
 import org.flywaydb.core.api.callback.Callback
 import org.flywaydb.core.api.logging.{Log, LogCreator, LogFactory}
 import org.flywaydb.core.internal.info.MigrationInfoDumper
-import sbt.Keys.*
-import sbt.*
+import sbt.Keys._
+import sbt._
 
-import scala.collection.JavaConverters.*
+import _root_.io.github.ijufumi.compat.CollectionConverters._
+import _root_.io.github.ijufumi.compat.classpathUrls
 import org.flywaydb.core.api.configuration.FluentConfiguration
-import sbt.io.PathFinder
 
 import java.net.URLClassLoader
 import scala.collection.mutable.Map
@@ -169,7 +169,7 @@ object FlywayPlugin extends AutoPlugin {
   // *********************
   // convenience settings
   // *********************
-  private case class ConfigDataSource(
+  private[ijufumi] case class ConfigDataSource(
       driver: String,
       url: String,
       user: String,
@@ -185,13 +185,13 @@ object FlywayPlugin extends AutoPlugin {
       "flyway.password" -> password,
     )
   }
-  private case class ConfigBase(
+  private[ijufumi] case class ConfigBase(
       schemas: Seq[String],
       table: String,
       baselineVersion: String,
       baselineDescription: String,
   )
-  private case class ConfigMigrationLoading(
+  private[ijufumi] case class ConfigMigrationLoading(
       locations: Seq[String],
       resolvers: Seq[String],
       skipDefaultResolvers: Boolean,
@@ -203,13 +203,13 @@ object FlywayPlugin extends AutoPlugin {
       callbacks: Seq[Callback],
       skipDefaultCallbacks: Boolean,
   )
-  private case class ConfigSqlMigration(
+  private[ijufumi] case class ConfigSqlMigration(
       sqlMigrationPrefix: String,
       repeatableSqlMigrationPrefix: String,
       sqlMigrationSeparator: String,
-      sqlMigrationSuffixes: String*,
+      sqlMigrationSuffixes: Seq[String],
   )
-  private case class ConfigMigrate(
+  private[ijufumi] case class ConfigMigrate(
       ignoreMissingMigrations: Boolean,
       ignoreFutureMigrations: Boolean,
       ignoreFailedMigrations: Boolean,
@@ -219,13 +219,13 @@ object FlywayPlugin extends AutoPlugin {
       group: Boolean,
       installedBy: String,
   )
-  private case class ConfigPlaceholder(
+  private[ijufumi] case class ConfigPlaceholder(
       placeholderReplacement: Boolean,
       placeholders: Map[String, String],
       placeholderPrefix: String,
       placeholderSuffix: String,
   )
-  private case class Config(
+  private[ijufumi] case class Config(
       dataSource: ConfigDataSource,
       base: ConfigBase,
       migrationLoading: ConfigMigrationLoading,
@@ -234,23 +234,24 @@ object FlywayPlugin extends AutoPlugin {
       placeholder: ConfigPlaceholder,
   )
 
-  private lazy val flywayConfigDataSource =
+  private[ijufumi] lazy val flywayConfigDataSource =
     taskKey[ConfigDataSource]("The Flyway data source configuration.")
-  private lazy val flywayConfigBase =
+  private[ijufumi] lazy val flywayConfigBase =
     taskKey[ConfigBase]("The Flyway base configuration.")
-  private lazy val flywayConfigMigrationLoading =
+  private[ijufumi] lazy val flywayConfigMigrationLoading =
     taskKey[ConfigMigrationLoading](
       "The Flyway migration loading configuration.",
     )
-  private lazy val flywayConfigSqlMigration =
+  private[ijufumi] lazy val flywayConfigSqlMigration =
     taskKey[ConfigSqlMigration]("The Flyway sql migration configuration.")
-  private lazy val flywayConfigMigrate =
+  private[ijufumi] lazy val flywayConfigMigrate =
     taskKey[ConfigMigrate]("The Flyway migrate configuration.")
-  private lazy val flywayConfigPlaceholder =
+  private[ijufumi] lazy val flywayConfigPlaceholder =
     taskKey[ConfigPlaceholder]("The Flyway placeholder configuration.")
-  private lazy val flywayConfig = taskKey[Config]("The Flyway configuration.")
-  private lazy val flywayClasspath =
-    taskKey[Types.Id[Classpath]]("The classpath used by Flyway.")
+  private[ijufumi] lazy val flywayConfig =
+    taskKey[Config]("The Flyway configuration.")
+  private[ijufumi] lazy val flywayClasspath =
+    taskKey[Classpath]("The classpath used by Flyway.")
 
   // *********************
   // flyway defaults
@@ -261,13 +262,21 @@ object FlywayPlugin extends AutoPlugin {
   def flywayBaseSettings(conf: Configuration): Seq[Setting[_]] = {
     import FlywayPlugin.autoImport._
     val defaults = getFlywayDefaults
+    flywaySettingSettings(defaults) ++
+      FlywayTaskDefs.flywayTaskSettings(conf)
+  }
+
+  private def flywaySettingSettings(
+      defaults: FluentConfiguration,
+  ): Seq[Setting[_]] = {
+    import FlywayPlugin.autoImport._
     Seq[Setting[_]](
       flywayDriver := "",
       flywayUrl := "",
       flywayUser := "",
       flywayPassword := "",
       flywayLocations := List("db/migration"),
-      flywayResolvers := Array.empty[String],
+      flywayResolvers := Seq.empty[String],
       flywaySkipDefaultResolvers := defaults.isSkipDefaultResolvers,
       flywaySchemas := defaults.getSchemas.toSeq,
       flywayTable := defaults.getTable,
@@ -277,10 +286,10 @@ object FlywayPlugin extends AutoPlugin {
       flywaySqlMigrationPrefix := defaults.getSqlMigrationPrefix,
       flywayRepeatableSqlMigrationPrefix := defaults.getRepeatableSqlMigrationPrefix,
       flywaySqlMigrationSeparator := defaults.getSqlMigrationSeparator,
-      flywaySqlMigrationSuffixes := defaults.getSqlMigrationSuffixes,
+      flywaySqlMigrationSuffixes := defaults.getSqlMigrationSuffixes.toSeq,
       flywayTarget := "current",
       flywayOutOfOrder := defaults.isOutOfOrder,
-      flywayCallbacks := new Array[Callback](0),
+      flywayCallbacks := Seq.empty[Callback],
       flywaySkipDefaultCallbacks := defaults.isSkipDefaultCallbacks,
       flywayIgnoreMissingMigrations := false,
       flywayIgnoreFutureMigrations := false,
@@ -296,102 +305,18 @@ object FlywayPlugin extends AutoPlugin {
       flywayInstalledBy := "",
       flywayCleanOnValidationError := defaults.isCleanOnValidationError,
       flywayCleanDisabled := defaults.isCleanDisabled,
-      flywayConfigDataSource := ConfigDataSource(
-        flywayDriver.value,
-        flywayUrl.value,
-        flywayUser.value,
-        flywayPassword.value,
-      ),
-      flywayConfigBase := ConfigBase(
-        flywaySchemas.value,
-        flywayTable.value,
-        flywayBaselineVersion.value,
-        flywayBaselineDescription.value,
-      ),
-      flywayConfigMigrationLoading := ConfigMigrationLoading(
-        flywayLocations.value,
-        flywayResolvers.value,
-        flywaySkipDefaultResolvers.value,
-        flywayEncoding.value,
-        flywayCleanOnValidationError.value,
-        flywayCleanDisabled.value,
-        flywayTarget.value,
-        flywayOutOfOrder.value,
-        flywayCallbacks.value,
-        flywaySkipDefaultCallbacks.value,
-      ),
-      flywayConfigSqlMigration := ConfigSqlMigration(
-        flywaySqlMigrationPrefix.value,
-        flywayRepeatableSqlMigrationPrefix.value,
-        flywaySqlMigrationSeparator.value,
-        flywaySqlMigrationSuffixes.value: _*,
-      ),
-      flywayConfigMigrate := ConfigMigrate(
-        flywayIgnoreMissingMigrations.value,
-        flywayIgnoreFutureMigrations.value,
-        flywayIgnoreFailedFutureMigration.value,
-        flywayBaselineOnMigrate.value,
-        flywayValidateOnMigrate.value,
-        flywayMixed.value,
-        flywayGroup.value,
-        flywayInstalledBy.value,
-      ),
-      flywayConfigPlaceholder := ConfigPlaceholder(
-        flywayPlaceholderReplacement.value,
-        flywayPlaceholders.value,
-        flywayPlaceholderPrefix.value,
-        flywayPlaceholderSuffix.value,
-      ),
-      flywayConfig := Config(
-        flywayConfigDataSource.value,
-        flywayConfigBase.value,
-        flywayConfigMigrationLoading.value,
-        flywayConfigSqlMigration.value,
-        flywayConfigMigrate.value,
-        flywayConfigPlaceholder.value,
-      ),
-      flywayClasspath := Def.taskDyn {
-        // fullClasspath triggers the compile task, so use a dynamic task to only run it if we need to.
-        // https://github.com/flyway/flyway-sbt/issues/10
-        if (flywayLocations.value.forall(_.startsWith("filesystem:"))) {
-          conf / externalDependencyClasspath
-        } else {
-          conf / fullClasspath
-        }
-      }.value,
-      // Tasks
-      flywayDefaults := withPrepared(flywayClasspath.value, streams.value)(
-        Flyway.configure(),
-      ),
-      flywayMigrate := flywayDefaults.value
-        .configure(flywayConfig.value)
-        .migrate(),
-      flywayValidate := flywayDefaults.value
-        .configure(flywayConfig.value)
-        .validate(),
-      flywayInfo := {
-        val info = flywayDefaults.value.configure(flywayConfig.value).info()
-        streams.value.log.info(MigrationInfoDumper.dumpToAsciiTable(info.all()))
-      },
-      flywayRepair := flywayDefaults.value
-        .configure(flywayConfig.value)
-        .repair(),
-      flywayClean := flywayDefaults.value.configure(flywayConfig.value).clean(),
-      flywayBaseline := flywayDefaults.value
-        .configure(flywayConfig.value)
-        .baseline(),
     )
   }
 
-  private def getFlywayDefaults: FluentConfiguration = {
+  private[ijufumi] def getFlywayDefaults: FluentConfiguration = {
     // This needs to be set so that Flyway could initialize properly
     // See https://github.com/flyway/flyway/issues/1922
     LogFactory.setLogCreator(SbtLogCreator)
     Flyway.configure()
   }
 
-  private def withPrepared[T](
-      cp: Types.Id[Keys.Classpath],
+  private[ijufumi] def withPrepared[T](
+      cp: Classpath,
       streams: TaskStreams,
   )(f: => T): T = {
     registerAsFlywayLogger(streams)
@@ -406,9 +331,10 @@ object FlywayPlugin extends AutoPlugin {
   }
 
   private def withContextClassLoader[T](
-      cp: Types.Id[Keys.Classpath],
+      cp: Classpath,
   )(f: => T): T = {
-    val classloader = toLoader(cp.map(_.data), getClass.getClassLoader)
+    val urls = classpathUrls(cp)
+    val classloader = new URLClassLoader(urls, getClass.getClassLoader)
     val thread = Thread.currentThread
     val oldLoader = thread.getContextClassLoader
     try {
@@ -419,14 +345,14 @@ object FlywayPlugin extends AutoPlugin {
     }
   }
 
-  private implicit class StringOps(val s: String) extends AnyVal {
+  private[ijufumi] implicit class StringOps(val s: String) extends AnyVal {
     def emptyToNull(): String = s match {
       case ss if ss.isEmpty => null
       case _                => s
     }
   }
 
-  private implicit class FluentConfiguratiOnlyOps(
+  private[ijufumi] implicit class FluentConfigurationOps(
       val flyway: FluentConfiguration,
   ) extends AnyVal {
     def configure(config: Config): Flyway = {
@@ -484,7 +410,7 @@ object FlywayPlugin extends AutoPlugin {
         ignorePatterns = ignorePatterns :+ "Future"
       }
       flyway
-        .ignoreMigrationPatterns(ignorePatterns *)
+        .ignoreMigrationPatterns(ignorePatterns: _*)
         .baselineOnMigrate(config.baselineOnMigrate)
         .validateOnMigrate(config.validateOnMigrate)
         .mixed(config.mixed)
@@ -509,9 +435,6 @@ object FlywayPlugin extends AutoPlugin {
       flyway.configuration(props)
     }
   }
-
-  def toLoader(finder: PathFinder, parent: ClassLoader): ClassLoader =
-    new URLClassLoader(finder.getURLs(), parent)
 
   private object SbtLogCreator extends LogCreator {
     def createLogger(clazz: Class[_]): FlywaySbtLog.type = FlywaySbtLog
