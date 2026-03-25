@@ -8,16 +8,20 @@ flyway-sbt is an sbt plugin that integrates [Flyway](https://flywaydb.org) datab
 
 ## Build & Test
 
-- **sbt version**: 1.10.1
-- **Scala**: Cross-builds for 2.12.20 and 2.13.16
+- **sbt version**: 1.12.8
+- **Scala**: Cross-builds for 2.12.20 (sbt 1.x) and 3.8.2 (sbt 2.x)
 - **Java**: Tested on JDK 11, 17, 21
 
 ```bash
-# Compile
-sbt compile
+# Compile (cross-build)
+sbt +compile
+
+# Compile for specific Scala version
+sbt "++2.12.20 compile"
+sbt "++3.8.2 compile"
 
 # Run scripted (integration) tests — this is the primary test suite
-sbt scripted
+sbt "++2.12.20 scripted"
 
 # Publish locally for testing
 sbt publishLocal
@@ -27,14 +31,22 @@ There are no unit tests. All testing uses sbt's [scripted test framework](http:/
 
 ## Architecture
 
-This is a single-file sbt plugin. The entire implementation lives in `src/main/scala/io/github/ijufumi/FlywayPlugin.scala`.
+The plugin implementation is split across shared and version-specific source directories:
+
+- `src/main/scala/` — shared code (FlywayPlugin.scala)
+- `src/main/scala-2.12/` — Scala 2.12 / sbt 1.x specific code
+- `src/main/scala-3/` — Scala 3 / sbt 2.x specific code
 
 **Key structure within FlywayPlugin:**
 - `autoImport` — defines all public sbt settings (`flywayUrl`, `flywayUser`, etc.) and tasks (`flywayMigrate`, `flywayValidate`, `flywayInfo`, `flywayClean`, `flywayBaseline`, `flywayRepair`)
-- Private `Config*` case classes — group related settings into typed configuration bundles
+- `Config*` case classes — group related settings into typed configuration bundles
 - `FluentConfigurationOps` implicit — chains config bundles onto Flyway's `FluentConfiguration`
 - `withContextClassLoader` — sets up the classloader from sbt's classpath so Flyway can find JDBC drivers and migrations
 - `SbtLogCreator` / `FlywaySbtLog` — bridges Flyway's logging to sbt's logger
+
+**Version-specific code:**
+- `compat.scala` — provides `CollectionConverters` (JavaConverters for 2.12, jdk.CollectionConverters for 3) and `classpathUrls` (handles File vs VirtualFileRef classpath differences)
+- `FlywayTaskDefs.scala` — task definitions (sbt 2.x requires `Def.uncached` for tasks without `HashWriter`)
 
 The plugin is `noTrigger` — users must explicitly `enablePlugins(FlywayPlugin)`. Settings are provided for both `Runtime` and `Test` configurations.
 
